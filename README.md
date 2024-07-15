@@ -42,4 +42,45 @@ The HTML file contains a button to trigger speech recognition and a content area
 <button class="talk">Talk</button>
 <div class="content"></div>
 
+window.addEventListener('load', () => {
+    speak("Initializing JARVIS...");
+    wishMe();
+});
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = new SpeechRecognition();
+
+recognition.onresult = (event) => {
+    const currentIndex = event.resultIndex;
+    const transcript = event.results[currentIndex][0].transcript;
+    content.textContent = transcript;
+    takeCommand(transcript.toLowerCase());
+};
+
+btn.addEventListener('click', () => {
+    content.textContent = "Listening...";
+    recognition.start();
+});
+
+function takeCommand(message) {
+    fetch('http://localhost:3000/command', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ command: message })
+    })
+    .then(response => response.json())
+    .then(data => {
+        speak(data.responseText);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        speak("Sorry, I encountered an error processing your request.");
+    });
+}
+
+
+Feel free to adjust the content based on any additional features or configurations specific to your project.
+
 git clone https://github.com/your-username/jarvis-voice-assistant.git
